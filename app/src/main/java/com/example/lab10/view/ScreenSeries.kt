@@ -1,13 +1,12 @@
 package com.example.lab10.view
-import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -15,9 +14,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,15 +25,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.lab10.data.SerieApiService
 import com.example.lab10.data.SerieModel
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ContenidoSeriesListado(navController: NavHostController, servicio: SerieApiService) {
@@ -55,9 +52,9 @@ fun ContenidoSeriesListado(navController: NavHostController, servicio: SerieApiS
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("ID", Modifier.weight(0.1f), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                Text("SERIE", Modifier.weight(0.7f), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                Text("Acción", Modifier.weight(0.2f), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Text("ID", Modifier.weight(0.1f), fontWeight = FontWeight.Bold)
+                Text("SERIE", Modifier.weight(0.7f), fontWeight = FontWeight.Bold)
+                Text("Acción", Modifier.weight(0.2f), fontWeight = FontWeight.Bold)
             }
         }
 
@@ -92,7 +89,7 @@ fun ContenidoSerieEditar(navController: NavHostController, servicio: SerieApiSer
     var release_date by remember { mutableStateOf<String?>("") }
     var rating by remember { mutableStateOf<String?>("") }
     var category by remember { mutableStateOf<String?>("") }
-    var grabar by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     if (id != 0) {
         LaunchedEffect(Unit) {
@@ -143,23 +140,18 @@ fun ContenidoSerieEditar(navController: NavHostController, servicio: SerieApiSer
         )
         Button(
             onClick = {
-                grabar = true
+                val objSerie = SerieModel(id, name!!, release_date!!, rating!!.toInt(), category!!)
+                scope.launch {
+                    if (id == 0)
+                        servicio.insertSerie(objSerie)
+                    else
+                        servicio.updateSerie(id.toString(), objSerie)
+                    navController.navigate("series")
+                }
             }
         ) {
             Text("Grabar", fontSize = 16.sp)
         }
-    }
-
-    if (grabar) {
-        val objSerie = SerieModel(id, name!!, release_date!!, rating!!.toInt(), category!!)
-        LaunchedEffect(Unit) {
-            if (id == 0)
-                servicio.insertSerie(objSerie)
-            else
-                servicio.updateSerie(id.toString(), objSerie)
-        }
-        grabar = false
-        navController.navigate("series")
     }
 }
 
